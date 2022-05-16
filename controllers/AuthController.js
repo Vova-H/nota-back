@@ -29,14 +29,14 @@ class AuthController {
             if (!errors.isEmpty()) {
                 return res.status(400).json({"message": "Ошибка при регистрации", errors})
             }
-            const {username, password} = req.body
-            const candidate = await UserModel.findOne({username})
+            const {name, surname, email, password} = req.body
+            const candidate = await UserModel.findOne({email})
             if (candidate) {
                 return res.status(400).json({"message": "Пользователь с тами логином уже сущесвтует"})
             }
             const hashPassword = await bcrypt.hashSync(password, 7)
             const userRole = await RoleModel.findOne({value: "USER"})
-            const user = await new UserModel({username, password: hashPassword, roles: [userRole.value]})
+            const user = await new UserModel({name, surname, email, password: hashPassword, roles: [userRole.value]})
             await user.save()
             return res.json({"message": "Пользователь был успешно зареестрирован"})
 
@@ -48,8 +48,8 @@ class AuthController {
 
     async login(req, res) {
         try {
-            const {username, password} = req.body
-            const user = await UserModel.findOne({username})
+            const {email, password} = req.body
+            const user = await UserModel.findOne({email})
             if (!user) {
                 return res.status(400).json({"message": "Такого пользователя не существует"})
             }

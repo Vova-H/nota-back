@@ -8,9 +8,11 @@ const authRouter = new Router()
 
 authRouter.get('/users', authMiddleware, roleMiddleware(["ADMIN"]), AuthController.getUsers)
 authRouter.post('/registration', [
-    check('username', "Имя не может быть пустым").notEmpty({ignore_whitespace: true}),
+    check('name', "Имя не может быть пустым").notEmpty({ignore_whitespace: true}),
+    check('surname', "Имя не может быть пустым").notEmpty({ignore_whitespace: true}),
     check('password', "пароль не может быть пустой строкой").notEmpty({ignore_whitespace: true}),
-    check('password', "пароль должен быть не меньше 4 символов").isLength({min: 4, max: 15})
+    check('password', "пароль должен быть не меньше 4 символов").isLength({min: 4, max: 15}),
+    check('email', "Введен некорректный email").isEmail()
 ], AuthController.registration)
 authRouter.post('/login', AuthController.login)
 
