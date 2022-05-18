@@ -1,9 +1,9 @@
-import RoleModel from "../models/RoleModel.js";
-import UserModel from "../models/UserModel.js";
 import bcrypt from "bcrypt"
 import {validationResult} from "express-validator";
 import jsonwebtoken from "jsonwebtoken";
 import secret from "../config.js"
+import {User} from "../models/models.js";
+
 
 const generateAccessToken = (id, roles) => {
     const payload = {
@@ -16,7 +16,7 @@ class AuthController {
 
     async getUsers(req, res) {
         try {
-            const users = await UserModel.find()
+            const users = await User.findAll()
             return res.status(200).json(users)
         } catch (e) {
             return res.status(400).json({"message": "getting error"})
@@ -30,13 +30,14 @@ class AuthController {
                 return res.status(400).json({"message": "Ошибка при регистрации", errors})
             }
             const {name, surname, email, password} = req.body
-            const candidate = await UserModel.findOne({email})
+            const candidate = await User.findOne({where: {email: `${email}`}})
+
             if (candidate) {
-                return res.status(400).json({"message": "Пользователь с тами логином уже сущесвтует"})
+                return res.status(400).json({"message": "Пользователь с такой почтой уже сущесвтует"})
             }
             const hashPassword = await bcrypt.hashSync(password, 7)
-            const userRole = await RoleModel.findOne({value: "USER"})
-            const user = await new UserModel({name, surname, email, password: hashPassword, roles: [userRole.value]})
+            const roles = ["USER"]
+            const user = await User.create({name, surname, email, password: hashPassword, roles: roles})
             await user.save()
             return res.json({"message": "Пользователь был успешно зареестрирован"})
 
@@ -49,7 +50,7 @@ class AuthController {
     async login(req, res) {
         try {
             const {email, password} = req.body
-            const user = await UserModel.findOne({email})
+            const user = await User.findOne({where: {email: `${email}`}})
             if (!user) {
                 return res.status(400).json({"message": "Такого пользователя не существует"})
             }
@@ -57,7 +58,7 @@ class AuthController {
             if (!encryptPassword) {
                 return res.status(400).json({"message": "Пароль не верный"})
             }
-            const token = await generateAccessToken(user._id, user.roles)
+            const token = await generateAccessToken(user.id, user.roles)
             return res.json(token)
         } catch (e) {
             console.log(e)

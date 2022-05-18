@@ -11,11 +11,16 @@ export default function (roles) {
         try {
             const token = req.headers.authorization.split(" ")[1]
             if (!token) {
-               return  res.status(403).json({"message": "Пользователь не авторизирован"})
+                return res.status(403).json({"message": "Пользователь не авторизирован"})
             }
+
             const {roles: userRoles} = jsonwebtoken.verify(token, secret)
             let hasRole = false
-            userRoles.forEach(role => {
+            if (typeof userRoles === "string")
+                if (userRoles.includes(roles)) {
+                    hasRole = true
+                }
+            if (typeof userRoles === "object") userRoles.forEach(role => {
                 if (roles.includes(role)) {
                     hasRole = true
                 }
