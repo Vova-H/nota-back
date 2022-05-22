@@ -9,19 +9,11 @@ const generateAccessToken = (id, roles) => {
     const payload = {
         id, roles
     }
-    return jsonwebtoken.sign(payload, secret)
+    const expiration = '30m'
+    return jsonwebtoken.sign(payload, secret, {expiresIn: expiration})
 }
 
 class AuthController {
-
-    async getUsers(req, res) {
-        try {
-            const users = await User.findAll()
-            return res.status(200).json(users)
-        } catch (e) {
-            return res.status(400).json({"message": "getting error"})
-        }
-    }
 
     async registration(req, res) {
         try {

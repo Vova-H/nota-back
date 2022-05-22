@@ -1,12 +1,9 @@
 import Router from "express";
 import AuthController from "../controllers/AuthController.js";
 import {check} from "express-validator";
-import authMiddleware from "../middleware/authMiddleware.js";
-import roleMiddleware from "../middleware/roleMiddleware.js";
 
 const authRouter = new Router()
 
-authRouter.get('/users', authMiddleware, roleMiddleware(["ADMIN"]), AuthController.getUsers)
 authRouter.post('/registration', [
     check('name', "Имя не может быть пустым").notEmpty({ignore_whitespace: true}),
     check('surname', "Имя не может быть пустым").notEmpty({ignore_whitespace: true}),

@@ -7,5 +7,4 @@ const reservationRouter = new Router()
 reservationRouter.post('/reservation', authMiddleware, ReservationController.create)
 reservationRouter.get('/reservation', authMiddleware, ReservationController.index)
 
-
 export default reservationRouter

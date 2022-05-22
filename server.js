@@ -1,15 +1,17 @@
 import {default as env} from 'dotenv/config'
 import express from "express";
 import authRouter from "./routs/authRouter.js";
-import ReservationRouter from "./routs/reservationRouter.js";
+import reservationRouter from "./routs/reservationRouter.js";
 import {default as sequelize} from './db.js'
 import {User, Reservation} from './models/models.js'
 import cors from 'cors'
+import adminRouter from "./routs/adminRouter.js";
 
 const app = express()
 app.use(express.json())
 app.use('/api', authRouter)
-app.use('/api', ReservationRouter)
+app.use('/api', reservationRouter)
+app.use('/api', adminRouter)
 app.use(cors)
 
 const configEnv = env
