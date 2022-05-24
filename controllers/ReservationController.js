@@ -19,16 +19,14 @@ class ReservationController {
 
     async create(req, res) {
         try {
-
             const token = req.headers.authorization.split(" ")[1]
             const {id} = await jsonwebtoken.verify(token, secret)
             const user = await User.findOne({where: {id: id}})
             const {date, time, action} = await req.body
 
             const result = await handlerDataTime(date, time)
-
             if (result.length !== 0) {
-                return res.status(400).json({'message': result[0].message})
+                return res.status(400).json({'errors': result})
             }
 
             const reservation = await Reservation.create({
@@ -41,23 +39,6 @@ class ReservationController {
             await reservation.save()
             return res.json({"message": "Резервация успешна"})
 
-
-            // const reqTime = time.split(':')
-            // const onlyTime = ((reqTime[0] * 3600 * 1000) + (reqTime[1] * 60 * 1000) - 10800000)
-            // const onlyDate = Date.parse(date)
-            //
-            // if (onlyDate + onlyTime <= Date.now()) {
-            //     return res.json({"message": "вы не можете сделать запись на прошлое время"})
-            // }
-            //
-            // const checkDate = await Reservation.findOne({where: {date: date}})
-            // const checkTime = await Reservation.findOne({where: {time: time}})
-            //
-            // if (checkDate && checkTime) {
-            //     return res.json({"message": "На текущее время уже есть запись"})
-            // }
-
-
         } catch (e) {
             console.log(e)
             return res.status(400).json({"message": "reservation failed"})
@@ -66,20 +47,31 @@ class ReservationController {
 
     async update(req, res) {
         try {
+            const {date, time, action} = await req.body
+            const result = await handlerDataTime(date, time)
+            const {id} = req.params
+            if (result.length !== 0) {
+                return res.status(400).json({'errors': result})
+            }
+            await Reservation.update({date: date, time: time, action: action}, {where: {id: id}})
+            return res.json({"message": "Ваша запись обновленна"})
 
         } catch (e) {
-
+            console.log(e)
+            return res.status(400).json({"message": "update failed"})
         }
     }
 
     async delete(req, res) {
         try {
-
+            const {id} = req.params
+            await Reservation.destroy({where: {id: id}})
+            return res.json({"message": "Ваша запись успешно удалена"})
         } catch (e) {
-
+            console.log(e)
+            return res.status(400).json({"message": "delete failed"})
         }
     }
-
 }
 
 export default new ReservationController()
