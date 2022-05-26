@@ -24,7 +24,7 @@ class ReservationController {
             const user = await User.findOne({where: {id: id}})
             const {date, time, action} = await req.body
 
-            const result = await handlerDataTime(date, time)
+            const result = await handlerDataTime(date, time, id)
             if (result.length !== 0) {
                 return res.status(400).json({'errors': result})
             }
@@ -48,12 +48,30 @@ class ReservationController {
     async update(req, res) {
         try {
             const {date, time, action} = await req.body
-            const result = await handlerDataTime(date, time)
-            const {id} = req.params
+            const token = req.headers.authorization.split(" ")[1]
+            const {id} = await jsonwebtoken.verify(token, secret)
+            const idParam = req.params.id
+            const reservation = await Reservation.findOne({
+                where: {
+                    id: idParam,
+                    userId: id
+                }
+            })
+            console.log(reservation)
+            if (reservation === null) {
+                return res.json({"message": "Запись не найдена"})
+            }
+            const result = await handlerDataTime(date, time, id)
+
             if (result.length !== 0) {
                 return res.status(400).json({'errors': result})
             }
-            await Reservation.update({date: date, time: time, action: action}, {where: {id: id}})
+            Reservation.update({date: date, time: time, action: action}, {
+                where: {
+                    id: idParam,
+                    userId: id
+                }
+            })
             return res.json({"message": "Ваша запись обновленна"})
 
         } catch (e) {
@@ -64,8 +82,14 @@ class ReservationController {
 
     async delete(req, res) {
         try {
-            const {id} = req.params
-            await Reservation.destroy({where: {id: id}})
+            const token = req.headers.authorization.split(" ")[1]
+            const {id} = await jsonwebtoken.verify(token, secret)
+            const idParam = req.params.id
+            const reservation = await Reservation.findOne({where: {id: idParam, userId: id}})
+            if (reservation === null) {
+                return res.json({"message": "Запись не найдена"})
+            }
+            await Reservation.destroy({where: {id: idParam, userId: id}})
             return res.json({"message": "Ваша запись успешно удалена"})
         } catch (e) {
             console.log(e)

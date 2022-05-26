@@ -1,6 +1,6 @@
 import {Reservation} from "../models/models.js";
 
-const handlerDataTime = async (date, time) => {
+const handlerDataTime = async (date, time, userId) => {
     const err = []
     try {
         const reqTime = time.split(':')
@@ -25,15 +25,16 @@ const handlerDataTime = async (date, time) => {
             err.push({"message": "вы не можете сделать запись на прошлое время"})
         }
 
-        const checkDate = await Reservation.findOne({where: {date: date}})
-        const checkTime = await Reservation.findOne({where: {time: time}})
+
+
+        const checkDate = await Reservation.findOne({where: {userId: userId, date: date}})
+        const checkTime = await Reservation.findOne({where: {userId: userId, time: time}})
+
         if (checkDate && checkTime) {
             err.push({"message": "На текущее время уже есть запись"})
         }
 
         let dayOfWeek = new Date(date).getDay();
-
-        console.log(dayOfWeek)
 
         if (dayOfWeek === 6) {
             err.push({"message": `мы не работаем по субботам`})

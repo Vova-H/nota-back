@@ -2,6 +2,7 @@ import jsonwebtoken from "jsonwebtoken";
 import secret from "../config.js";
 
 export default function (roles) {
+
     return function (req, res, next) {
 
         if (req.method === "OPTIONS") {
@@ -13,7 +14,7 @@ export default function (roles) {
             if (!token) {
                 return res.status(403).json({"message": "Пользователь не авторизирован"})
             }
-
+            console.log(token)
             const {roles: userRoles} = jsonwebtoken.verify(token, secret)
             let hasRole = false
             if (typeof userRoles === "string")
